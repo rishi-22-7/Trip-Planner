@@ -162,9 +162,17 @@ const CreateTrip = () => {
     fetchItinerary();
   }, [destParam]);
 
-  // Count total activity strings across all days (for the "applied" badge)
-  const totalSeededActivities = preseededItinerary
-    ? preseededItinerary.reduce((sum, d) => sum + (d.activities?.length || 0), 0)
+  // Calculate selected trip duration in days
+  const tripDuration = (formData.startDate && formData.endDate && isValidDateRange(formData.startDate, formData.endDate))
+    ? Math.ceil((new Date(formData.endDate) - new Date(formData.startDate)) / (1000 * 60 * 60 * 24)) + 1
+    : (preseededItinerary ? preseededItinerary.length : 0);
+
+  // Slice the itinerary to match the selected duration
+  const limitedItinerary = preseededItinerary ? preseededItinerary.slice(0, tripDuration) : null;
+
+  // Count total activity strings across the limited days
+  const totalSeededActivities = limitedItinerary
+    ? limitedItinerary.reduce((sum, d) => sum + (d.activities?.length || 0), 0)
     : 0;
 
   const handleFieldChange = (field, value) => {
@@ -200,8 +208,8 @@ const CreateTrip = () => {
         // Server / Trip model expects `estimatedBudget`, not `budget`
         estimatedBudget: budget ? Number(budget) : 0,
         // Only send seededActivities if the user explicitly accepted the template
-        ...(itineraryApplied && preseededItinerary
-          ? { seededActivities: preseededItinerary }
+        ...(itineraryApplied && limitedItinerary
+          ? { seededActivities: limitedItinerary }
           : {}),
       };
       const newTrip = await addTrip(payload);
@@ -244,7 +252,7 @@ const CreateTrip = () => {
         {/* ── Itinerary banner (shown when destination has template) ── */}
         {showBanner && (
           <ItineraryBanner
-            itinerary={preseededItinerary}
+            itinerary={limitedItinerary}
             onApply={() => setItineraryApplied(true)}
             onDismiss={() => setBannerDismissed(true)}
           />
