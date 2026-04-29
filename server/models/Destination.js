@@ -22,10 +22,7 @@ const destinationSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    recommendedPlaces: {
-      type: [String],
-      default: [],
-    },
+    // recommendedPlaces removed – itinerary template is used as the preview instead
     imageUrl: {
       type: String,
       trim: true,

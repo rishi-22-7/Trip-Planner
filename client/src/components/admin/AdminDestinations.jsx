@@ -20,7 +20,6 @@ import { getAllDestinations, createDestination, updateDestination, deleteDestina
 const EMPTY_FORM = {
   destinationName: '',
   description: '',
-  recommendedPlaces: '',  // comma-separated input, split before saving
 };
 
 // ─── Itinerary Day Editor ─────────────────────────────────────────────────────
@@ -118,7 +117,6 @@ const DestinationForm = ({ editingDestination, onSave, onCancel }) => {
       ? {
           destinationName: editingDestination.destinationName || '',
           description: editingDestination.description || '',
-          recommendedPlaces: (editingDestination.recommendedPlaces || []).join(', '),
         }
       : { ...EMPTY_FORM }
   );
@@ -132,10 +130,8 @@ const DestinationForm = ({ editingDestination, onSave, onCancel }) => {
     if (!form.destinationName.trim()) { toast.error('Destination name is required.'); return; }
     setSaving(true);
     try {
-      // Split the comma-separated string into a clean array for the backend
       const payload = {
         ...form,
-        recommendedPlaces: form.recommendedPlaces.split(',').map((p) => p.trim()).filter(Boolean),
         itinerary: itineraryDays,
       };
       await onSave(payload);
@@ -161,10 +157,6 @@ const DestinationForm = ({ editingDestination, onSave, onCancel }) => {
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
           <textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief overview of the destination" className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Recommended Places <span className="text-slate-400 font-normal">(comma-separated)</span></label>
-          <input type="text" value={form.recommendedPlaces} onChange={(e) => setForm({ ...form, recommendedPlaces: e.target.value })} placeholder="e.g. Baga Beach, Fort Aguada, Dudhsagar Falls" className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
       </div>
 
@@ -285,28 +277,18 @@ const AdminDestinations = () => {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                {['Name', 'Description', 'Places', 'Itinerary', 'Actions'].map((h) => (
+                {['Name', 'Description', 'Itinerary', 'Actions'].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {destinations.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-400">No destinations yet.</td></tr>
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">No destinations yet.</td></tr>
               ) : destinations.map((d) => (
                 <tr key={d._id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{d.destinationName}</td>
                   <td className="px-4 py-3 text-slate-500 max-w-xs truncate">{d.description}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {(d.recommendedPlaces || []).slice(0, 2).map((p) => (
-                        <span key={p} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{p}</span>
-                      ))}
-                      {(d.recommendedPlaces || []).length > 2 && (
-                        <span className="text-xs text-slate-400">+{d.recommendedPlaces.length - 2}</span>
-                      )}
-                    </div>
-                  </td>
                   <td className="px-4 py-3 text-slate-500 text-xs">
                     {d.itinerary?.length > 0 ? `${d.itinerary.length} day${d.itinerary.length !== 1 ? 's' : ''}` : '—'}
                   </td>

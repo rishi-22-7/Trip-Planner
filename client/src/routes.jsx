@@ -28,7 +28,7 @@ import AdminDashboard  from './pages/AdminDashboard';
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400 text-sm">Loading…</div>;
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
 // Redirect logged-in users away from public-only pages
@@ -43,7 +43,7 @@ const PublicOnlyRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400 text-sm">Loading…</div>;
-  if (!isAuthenticated)          return <Navigate to="/login"  replace />;
+  if (!isAuthenticated)          return <Navigate to="/"  replace />;
   if (user?.role !== 'admin')    return <Navigate to="/trips"  replace />;
   return children;
 };

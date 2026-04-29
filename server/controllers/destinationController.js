@@ -32,7 +32,7 @@ const getDestinationById = async (req, res) => {
 
 const createDestination = async (req, res) => {
   try {
-    const { destinationName, description, recommendedPlaces, imageUrl, itinerary } = req.body;
+    const { destinationName, description, imageUrl, itinerary } = req.body;
 
     if (!destinationName || !description) {
       return res.status(400).json({
@@ -44,7 +44,6 @@ const createDestination = async (req, res) => {
     const destination = await Destination.create({
       destinationName,
       description,
-      recommendedPlaces: Array.isArray(recommendedPlaces) ? recommendedPlaces : [],
       imageUrl,
       // Persist the pre-planned itinerary template if provided by the admin
       itinerary: Array.isArray(itinerary) ? itinerary : [],
@@ -69,12 +68,9 @@ const updateDestination = async (req, res) => {
       return res.status(404).json({ success: false, message: "Destination not found" });
     }
 
-    const { destinationName, description, recommendedPlaces, imageUrl, itinerary } = req.body;
+    const { destinationName, description, imageUrl, itinerary } = req.body;
     if (destinationName !== undefined) destination.destinationName = destinationName;
     if (description !== undefined) destination.description = description;
-    if (recommendedPlaces !== undefined) {
-      destination.recommendedPlaces = Array.isArray(recommendedPlaces) ? recommendedPlaces : [];
-    }
     if (imageUrl !== undefined) destination.imageUrl = imageUrl;
     // Replace the entire itinerary template when the admin saves changes
     if (itinerary !== undefined) {

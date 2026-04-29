@@ -49,7 +49,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md animate-fade-in-up">
 
         {/* Card */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-8">
@@ -68,10 +68,10 @@ const Login = () => {
           <form onSubmit={handleLoginSubmit} noValidate className="space-y-4">
 
             {/* Email */}
-            <div>
+            <div className="animate-fade-in-up delay-100">
               <label htmlFor="login-email" className="block text-sm font-medium text-slate-700 mb-1">Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-colors" />
                 <input
                   id="login-email"
                   type="email"
@@ -79,14 +79,16 @@ const Login = () => {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow ${errors.email ? 'border-red-400' : 'border-slate-300'}`}
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:scale-[1.01] transition-all ${errors.email ? 'border-red-400' : 'border-slate-300'}`}
                 />
               </div>
-              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-500 animate-fade-in-down">{errors.email}</p>
+              )}
             </div>
 
             {/* Password */}
-            <div>
+            <div className="animate-fade-in-up delay-200">
               <label htmlFor="login-password" className="block text-sm font-medium text-slate-700 mb-1">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -97,31 +99,40 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow ${errors.password ? 'border-red-400' : 'border-slate-300'}`}
+                  className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:scale-[1.01] transition-all ${errors.password ? 'border-red-400' : 'border-slate-300'}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors hover:scale-110"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
+              {errors.password && (
+                <p className="mt-1 text-xs text-red-500 animate-fade-in-down">{errors.password}</p>
+              )}
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
-            >
-              {isSubmitting ? 'Signing in…' : 'Sign In'}
-            </button>
+            <div className="animate-fade-in-up delay-300">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-lg transition-all text-sm hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
+                    Signing in…
+                  </span>
+                ) : 'Sign In'}
+              </button>
+            </div>
           </form>
 
-          <p className="mt-5 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-sm text-slate-500 animate-fade-in-up delay-400">
             Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 font-medium hover:text-blue-700 transition-colors">
+            <Link to="/register" className="text-blue-600 font-medium hover:text-blue-700 transition-colors hover:underline">
               Create one
             </Link>
           </p>
