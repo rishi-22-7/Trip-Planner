@@ -14,6 +14,9 @@ export const getAllUsers   = async () => (await api.get('/admin/users')).data;
 // ── All Trips (admin view) ───────────────────────────────────────────────────
 export const getAllAdminTrips = async () => (await api.get('/admin/trips')).data;
 
+// ── Travel Tips (user-facing, read-only) ─────────────────────────────────────
+export const getTips = async () => (await api.get('/tips')).data;
+
 // ── Recommendations ──────────────────────────────────────────────────────────
 // These hit /api/admin/recommendations – adjust if your backend route differs
 export const getRecommendations    = async ()       => (await api.get('/admin/recommendations')).data;

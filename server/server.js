@@ -10,6 +10,7 @@ const activityRoutes = require("./routes/activityRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const destinationRoutes = require("./routes/destinationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const tipsRoutes  = require("./routes/tipsRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/activities", activityRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/destinations", destinationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/tips",  tipsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

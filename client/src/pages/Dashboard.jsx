@@ -6,21 +6,39 @@
 */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Plane } from 'lucide-react';
+import { Plus, Search, Plane, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import TripCard from '../components/TripCard';
 import { useTrips } from '../context/TripContext';
 import { getTripStatus } from '../utils/helperFunctions';
+import { getTips } from '../services/adminService';
+
+const CATEGORY_COLORS = {
+  General:      'bg-slate-100 text-slate-700',
+  Packing:      'bg-blue-50 text-blue-700',
+  Safety:       'bg-red-50 text-red-700',
+  Health:       'bg-green-50 text-green-700',
+  Budget:       'bg-amber-50 text-amber-700',
+  Photography:  'bg-purple-50 text-purple-700',
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { trips, loading, error, fetchTrips } = useTrips();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [tips, setTips] = useState([]);
+  const [tipsExpanded, setTipsExpanded] = useState(true);
 
   useEffect(() => {
     fetchTrips();
   }, [fetchTrips]);
+
+  useEffect(() => {
+    getTips()
+      .then((data) => setTips(data.data || []))
+      .catch(() => setTips([])); // silently fail if no tips yet
+  }, []);
 
   const filteredTrips = trips.filter((trip) => {
     const matchesSearch = trip.tripName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -152,6 +170,53 @@ const Dashboard = () => {
               >
                 <Plus className="w-4 h-4" /> Create a Trip
               </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Travel Tips section ── */}
+        {tips.length > 0 && (
+          <div className="mt-10 animate-fade-in-up">
+            {/* Section header */}
+            <button
+              onClick={() => setTipsExpanded((v) => !v)}
+              className="flex items-center justify-between w-full mb-4 group"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                  <Lightbulb className="w-4 h-4 text-amber-500" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 text-left">Travel Tips</h2>
+                  <p className="text-xs text-slate-400 text-left">Helpful advice for your next trip</p>
+                </div>
+              </div>
+              {tipsExpanded
+                ? <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                : <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />}
+            </button>
+
+            {tipsExpanded && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tips.map((tip) => (
+                  <div
+                    key={tip._id}
+                    className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span
+                        className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                          CATEGORY_COLORS[tip.category] || CATEGORY_COLORS.General
+                        }`}
+                      >
+                        {tip.category}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-900 leading-snug">{tip.title}</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">{tip.content}</p>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
