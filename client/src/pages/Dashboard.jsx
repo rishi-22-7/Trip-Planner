@@ -36,7 +36,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     getTips()
-      .then((data) => setTips(data.data || []))
+      .then((data) => {
+        const allTips = data.data || [];
+        // Shuffle and pick 3 random tips to keep the dashboard fresh
+        const randomTips = [...allTips].sort(() => 0.5 - Math.random()).slice(0, 3);
+        setTips(randomTips);
+      })
       .catch(() => setTips([])); // silently fail if no tips yet
   }, []);
 
