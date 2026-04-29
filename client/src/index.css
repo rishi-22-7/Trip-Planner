@@ -1,0 +1,27 @@
+/* 
+  index.css
+  Global stylesheet. Imports Tailwind CSS v4 and defines minimal
+  base resets + animation utilities used across the app.
+*/
+
+@import "tailwindcss";
+
+/* Custom keyframe: fade a card in from below */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s ease-out both;
+}
+
+/* Stagger helpers for card grids */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
