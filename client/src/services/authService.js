@@ -21,3 +21,9 @@ export const changePassword = async (currentPassword, newPassword) => {
   return response.data;
 };
 
+// updateProfile: called from UserProfile
+// Sends name, email, profilePicture to PUT /api/auth/profile
+export const updateProfile = async (profileData) => {
+  const response = await api.put('/auth/profile', profileData);
+  return response.data;
+};

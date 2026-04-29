@@ -39,6 +39,10 @@ const DestinationPage = () => {
   );
 
   const handlePlanTrip = (destinationName) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     navigate(`/trips/new?destination=${encodeURIComponent(destinationName)}`);
   };
 

@@ -86,7 +86,11 @@ const Navbar = () => {
                   className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
                   data-testid="nav-profile"
                 >
-                  <User className="w-4 h-4" />
+                  {user?.profilePicture ? (
+                    <img src={user.profilePicture} alt="Profile" className="w-6 h-6 rounded-full object-cover border border-slate-200" />
+                  ) : (
+                    <User className="w-4 h-4" />
+                  )}
                   {user?.name?.split(' ')[0]}
                 </Link>
                 <button

@@ -10,6 +10,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import DestinationCard from '../components/DestinationCard';
 import { getAllDestinations } from '../services/destinationService';
+import { useAuth } from '../context/AuthContext';
 
 // Static feature highlights
 const FEATURES = [
@@ -21,6 +22,7 @@ const FEATURES = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [destinations, setDestinations] = useState([]);
   const [loadingDestinations, setLoadingDestinations] = useState(true);
 
@@ -137,7 +139,13 @@ const Home = () => {
               <div key={dest._id} className={`animate-fade-in-up delay-${i * 100}`}>
                 <DestinationCard
                   destination={dest}
-                  onPlanTrip={(name) => navigate(`/trips/new?destination=${encodeURIComponent(name)}`)}
+                  onPlanTrip={(name) => {
+                    if (!isAuthenticated) {
+                      navigate('/login');
+                    } else {
+                      navigate(`/trips/new?destination=${encodeURIComponent(name)}`);
+                    }
+                  }}
                 />
               </div>
             ))}
