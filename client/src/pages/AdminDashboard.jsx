@@ -1,41 +1,36 @@
 /*
   AdminDashboard.jsx – Main Admin portal page.
-  Acts as a tabbed layout container. Each tab renders a self-contained
-  sub-component from components/admin/ so this file stays readable.
+  Tabbed layout; each tab renders a self-contained sub-component.
 
   Tab → Component mapping:
-    destinations  → AdminDestinations   (CRUD + itinerary builder)
-    recommendations → AdminRecommendations (CRUD)
-    trips         → AdminUserTrips       (read-only monitor)
-    reports       → AdminReports         (stats + download)
-    settings      → AdminPlatformContent (global config)
+    destinations    → AdminDestinations   (CRUD + itinerary builder)
+    recommendations → AdminRecommendations (Travel tips CRUD)
+    trips           → AdminUserTrips       (read-only monitor)
+    users           → AdminUsers           (read-only user list, admin excluded)
+    reports         → AdminReports         (stats + bar chart)
 
-  No user-centric tools ("Plan a Trip", etc.) appear here.
+  Settings tab has been removed (not needed).
   Route guard: AdminRoute in routes.jsx ensures only role === 'admin' can access.
 */
 import { useState } from 'react';
-import { Globe, Star, Plane, BarChart2, Settings, Shield } from 'lucide-react';
+import { Globe, Lightbulb, Plane, Users, BarChart2, Shield } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import AdminDestinations   from '../components/admin/AdminDestinations';
+import AdminDestinations    from '../components/admin/AdminDestinations';
 import AdminRecommendations from '../components/admin/AdminRecommendations';
-import AdminUserTrips      from '../components/admin/AdminUserTrips';
-import AdminReports        from '../components/admin/AdminReports';
-import AdminPlatformContent from '../components/admin/AdminPlatformContent';
+import AdminUserTrips       from '../components/admin/AdminUserTrips';
+import AdminUsers           from '../components/admin/AdminUsers';
+import AdminReports         from '../components/admin/AdminReports';
 
-// Tab definitions – each maps a key to a label, icon, and the component to render
 const TABS = [
-  { key: 'destinations',    label: 'Destinations',    icon: Globe,     component: AdminDestinations    },
-  { key: 'recommendations', label: 'Recommendations', icon: Star,      component: AdminRecommendations },
-  { key: 'trips',           label: 'User Trips',      icon: Plane,     component: AdminUserTrips      },
-  { key: 'reports',         label: 'Reports',         icon: BarChart2, component: AdminReports        },
-  { key: 'settings',        label: 'Settings',        icon: Settings,  component: AdminPlatformContent },
+  { key: 'destinations',    label: 'Destinations',    icon: Globe,       component: AdminDestinations    },
+  { key: 'recommendations', label: 'Travel Tips',     icon: Lightbulb,   component: AdminRecommendations },
+  { key: 'trips',           label: 'User Trips',      icon: Plane,       component: AdminUserTrips       },
+  { key: 'users',           label: 'Users',           icon: Users,       component: AdminUsers           },
+  { key: 'reports',         label: 'Reports',         icon: BarChart2,   component: AdminReports         },
 ];
 
 const AdminDashboard = () => {
-  // activeTab controls which sub-component is rendered
   const [activeTab, setActiveTab] = useState('destinations');
-
-  // Look up the component for the currently active tab
   const ActiveComponent = TABS.find((t) => t.key === activeTab)?.component;
 
   return (
@@ -73,7 +68,7 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Active tab content – renders the selected sub-component */}
+        {/* Active tab content */}
         <div className="bg-gray-50">
           {ActiveComponent && <ActiveComponent />}
         </div>
