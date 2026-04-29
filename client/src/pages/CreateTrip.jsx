@@ -1,39 +1,174 @@
 /*
   CreateTrip.jsx – Form to create a new trip.
   Submits to TripContext.addTrip() → tripService.createTrip() → POST /api/trips.
+
   Pre-fills the destination field if a ?destination= query param is present
   (passed from DestinationCard's "Plan a Trip Here" button on Home/DestinationPage).
+
+  If the destination has a pre-seeded itinerary (authored by an admin), a
+  dismissible banner offers to auto-populate the trip's activities from it.
+  When accepted, the itinerary is passed as `seededActivities` in the API
+  payload and the server bulk-inserts them as Activity documents.
 */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MapPin, Calendar, DollarSign, Users, Plane } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Users, Plane, Sparkles, ChevronDown, ChevronUp, X, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import { useTrips } from '../context/TripContext';
+import { getAllDestinations } from '../services/destinationService';
 import { isRequired, isValidDateRange, isPositiveNumber } from '../utils/validators';
 
 const TRIP_TYPES = ['Solo', 'Couple', 'Family', 'Group'];
 
+// ─── Itinerary Preview Banner ─────────────────────────────────────────────────
+// Shown when the selected destination has a pre-seeded itinerary template.
+// The user can expand to preview the days, then apply or dismiss.
+const ItineraryBanner = ({ itinerary, onApply, onDismiss }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mb-5 border border-blue-200 bg-blue-50 rounded-xl overflow-hidden">
+      {/* Header row */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+          <Sparkles className="w-4 h-4 text-blue-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-blue-900">Pre-planned Itinerary Available</p>
+          <p className="text-xs text-blue-600 mt-0.5">
+            This destination has a {itinerary.length}-day template ready to apply.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="text-blue-500 hover:text-blue-700 transition-colors shrink-0"
+          aria-label={expanded ? 'Collapse itinerary preview' : 'Expand itinerary preview'}
+        >
+          {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="text-blue-400 hover:text-blue-600 transition-colors shrink-0"
+          aria-label="Dismiss itinerary banner"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Expandable preview */}
+      {expanded && (
+        <div className="border-t border-blue-100 px-4 py-3 space-y-2 max-h-56 overflow-y-auto">
+          {itinerary.map((dayEntry) => (
+            <div key={dayEntry.day}>
+              <p className="text-xs font-bold text-blue-700 mb-1">Day {dayEntry.day}</p>
+              <ul className="space-y-0.5 pl-3">
+                {dayEntry.activities.map((act, i) => (
+                  <li key={i} className="text-xs text-blue-800 flex items-start gap-1.5">
+                    <span className="mt-0.5 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
+                    {act}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Action row */}
+      <div className="border-t border-blue-100 flex gap-2 px-4 py-2.5">
+        <button
+          type="button"
+          onClick={onApply}
+          className="flex items-center gap-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+        >
+          <Check className="w-3.5 h-3.5" /> Yes, apply itinerary
+        </button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="text-xs font-medium text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+        >
+          No thanks, I'll plan myself
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── Applied Itinerary Confirmation ──────────────────────────────────────────
+// Shown after the user clicks "Yes, apply itinerary" — a small green badge.
+const ItineraryAppliedBadge = ({ count, onUndo }) => (
+  <div className="mb-5 flex items-center gap-3 px-4 py-2.5 border border-green-200 bg-green-50 rounded-xl">
+    <Check className="w-4 h-4 text-green-600 shrink-0" />
+    <p className="text-sm text-green-800 flex-1">
+      <span className="font-semibold">{count} activities</span> from the itinerary template will be added to your trip.
+    </p>
+    <button type="button" onClick={onUndo} className="text-xs text-green-600 hover:underline shrink-0">
+      Undo
+    </button>
+  </div>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 const CreateTrip = () => {
   const navigate        = useNavigate();
   const [searchParams]  = useSearchParams();
   const { addTrip }     = useTrips();
 
+  const destParam = searchParams.get('destination') || '';
+
   const [formData, setFormData] = useState({
     tripName:    '',
-    destination: searchParams.get('destination') || '',
+    destination: destParam,
     startDate:   '',
     endDate:     '',
     budget:      '',
     tripType:    'Solo',
     description: '',
   });
-  const [errors, setErrors]         = useState({});
+  const [errors, setErrors]             = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ── Itinerary state ────────────────────────────────────────────────────────
+  // preseededItinerary: the template loaded from the matched destination (null = none)
+  // itineraryApplied:  true = user accepted → seededActivities will be sent on submit
+  // bannerDismissed:   true = user clicked "No thanks" → hide banner entirely
+  const [preseededItinerary, setPreseededItinerary] = useState(null);
+  const [itineraryApplied, setItineraryApplied]     = useState(false);
+  const [bannerDismissed, setBannerDismissed]       = useState(false);
+
+  // On mount: if a destination param is present, look it up and check for an itinerary
+  useEffect(() => {
+    if (!destParam) return;
+
+    const fetchItinerary = async () => {
+      try {
+        const res = await getAllDestinations();
+        const destinations = res.data || [];
+        // Case-insensitive match on destination name
+        const matched = destinations.find(
+          (d) => d.destinationName.toLowerCase() === destParam.toLowerCase()
+        );
+        if (matched?.itinerary && matched.itinerary.length > 0) {
+          setPreseededItinerary(matched.itinerary);
+        }
+      } catch {
+        // Silently fail — the user can still create the trip without the template
+      }
+    };
+    fetchItinerary();
+  }, [destParam]);
+
+  // Count total activity strings across all days (for the "applied" badge)
+  const totalSeededActivities = preseededItinerary
+    ? preseededItinerary.reduce((sum, d) => sum + (d.activities?.length || 0), 0)
+    : 0;
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear the error for this field as the user types
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
@@ -59,8 +194,22 @@ const CreateTrip = () => {
 
     setIsSubmitting(true);
     try {
-      const newTrip = await addTrip(formData);
-      toast.success('Trip created successfully!');
+      const { budget, ...rest } = formData;
+      const payload = {
+        ...rest,
+        // Server / Trip model expects `estimatedBudget`, not `budget`
+        estimatedBudget: budget ? Number(budget) : 0,
+        // Only send seededActivities if the user explicitly accepted the template
+        ...(itineraryApplied && preseededItinerary
+          ? { seededActivities: preseededItinerary }
+          : {}),
+      };
+      const newTrip = await addTrip(payload);
+      toast.success(
+        itineraryApplied
+          ? `Trip created with ${totalSeededActivities} pre-planned activities!`
+          : 'Trip created successfully!'
+      );
       navigate(`/trips/${newTrip.data._id}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create trip.');
@@ -75,6 +224,11 @@ const CreateTrip = () => {
       errors[field] ? 'border-red-400' : 'border-slate-300'
     }`;
 
+  // Determine banner visibility:
+  // Show banner  → destination has an itinerary AND user hasn't dismissed AND hasn't already applied
+  const showBanner  = preseededItinerary && !bannerDismissed && !itineraryApplied;
+  const showApplied = itineraryApplied && preseededItinerary;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -86,6 +240,23 @@ const CreateTrip = () => {
           <h1 className="text-2xl font-bold text-slate-900">Plan a New Trip</h1>
           <p className="text-sm text-slate-500 mt-0.5">Fill in the details to get started.</p>
         </div>
+
+        {/* ── Itinerary banner (shown when destination has template) ── */}
+        {showBanner && (
+          <ItineraryBanner
+            itinerary={preseededItinerary}
+            onApply={() => setItineraryApplied(true)}
+            onDismiss={() => setBannerDismissed(true)}
+          />
+        )}
+
+        {/* ── Applied confirmation badge ── */}
+        {showApplied && (
+          <ItineraryAppliedBadge
+            count={totalSeededActivities}
+            onUndo={() => { setItineraryApplied(false); setBannerDismissed(false); }}
+          />
+        )}
 
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
           <form onSubmit={handleTripSubmit} noValidate className="space-y-5">
@@ -217,3 +388,5 @@ const CreateTrip = () => {
 };
 
 export default CreateTrip;
+
+

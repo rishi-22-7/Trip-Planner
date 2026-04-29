@@ -23,7 +23,7 @@ const getActivitiesByTrip = async (req, res) => {
 
 const createActivity = async (req, res) => {
   try {
-    const { tripId, activityName, activityDate, location, description } = req.body;
+    const { tripId, activityName, activityDate, location, description, cost } = req.body;
 
     if (!tripId || !activityName || !activityDate || !location) {
       return res.status(400).json({
@@ -47,6 +47,7 @@ const createActivity = async (req, res) => {
       activityDate,
       location,
       description,
+      cost: cost !== undefined ? Number(cost) : 0,
     });
 
     return res.status(201).json({ success: true, data: activity });
@@ -72,11 +73,12 @@ const updateActivity = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const { activityName, activityDate, location, description } = req.body;
+    const { activityName, activityDate, location, description, cost } = req.body;
     if (activityName !== undefined) activity.activityName = activityName;
     if (activityDate !== undefined) activity.activityDate = activityDate;
     if (location !== undefined) activity.location = location;
     if (description !== undefined) activity.description = description;
+    if (cost !== undefined) activity.cost = Number(cost);
 
     const updatedActivity = await activity.save();
     return res.status(200).json({ success: true, data: updatedActivity });

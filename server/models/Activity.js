@@ -26,6 +26,13 @@ const activitySchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    // Actual cost of the activity, filled in by the user after completion.
+    // Used to compute total actual spend vs. the trip's estimatedBudget.
+    cost: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true }
 );

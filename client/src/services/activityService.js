@@ -7,4 +7,7 @@ import api from './api';
 
 export const getActivitiesByTrip = async (tripId) => (await api.get(`/activities/trip/${tripId}`)).data;
 export const createActivity      = async (data)   => (await api.post('/activities', data)).data;
+// updateActivity: used by ActivityCard edit modal – PUT /api/activities/:id
+export const updateActivity      = async (id, d)  => (await api.put(`/activities/${id}`, d)).data;
 export const deleteActivity      = async (id)     => (await api.delete(`/activities/${id}`)).data;
+

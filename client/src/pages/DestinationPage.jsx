@@ -10,9 +10,13 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import DestinationCard from '../components/DestinationCard';
 import { getAllDestinations } from '../services/destinationService';
+import { useAuth } from '../context/AuthContext';
 
 const DestinationPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  // Admins browse destinations for management; they do not plan trips
+  const isAdmin = user?.role === 'admin';
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading]           = useState(true);
   const [searchQuery, setSearchQuery]   = useState('');
@@ -50,7 +54,9 @@ const DestinationPage = () => {
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <MapPin className="w-6 h-6 text-blue-600" /> Destinations
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">Explore places and start planning your next trip</p>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {isAdmin ? 'Browse all destinations on the platform' : 'Explore places and start planning your next trip'}
+            </p>
           </div>
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -81,7 +87,12 @@ const DestinationPage = () => {
         {!loading && filteredDestinations.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filteredDestinations.map((dest) => (
-              <DestinationCard key={dest._id} destination={dest} onPlanTrip={handlePlanTrip} />
+              // onPlanTrip is omitted for admins – DestinationCard hides the CTA button when the prop is absent
+              <DestinationCard
+                key={dest._id}
+                destination={dest}
+                onPlanTrip={isAdmin ? undefined : handlePlanTrip}
+              />
             ))}
           </div>
         )}

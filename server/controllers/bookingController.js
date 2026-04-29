@@ -55,6 +55,7 @@ const createBooking = async (req, res) => {
       checkInDate, checkOutDate,
       departureAirport, arrivalAirport, departureTime, arrivalTime,
       fromLocation, toLocation, travelDate,
+      cost: req.body.cost !== undefined ? Number(req.body.cost) : 0,
     });
 
     return res.status(201).json({ success: true, data: booking });
@@ -80,12 +81,23 @@ const updateBooking = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const { bookingType, bookingName, checkInDate, checkOutDate, confirmationNumber } = req.body;
+    const { bookingType, bookingName, checkInDate, checkOutDate, confirmationNumber, notes, cost,
+            departureAirport, arrivalAirport, departureTime, arrivalTime,
+            fromLocation, toLocation, travelDate } = req.body;
     if (bookingType !== undefined) booking.bookingType = bookingType;
     if (bookingName !== undefined) booking.bookingName = bookingName;
     if (checkInDate !== undefined) booking.checkInDate = checkInDate;
     if (checkOutDate !== undefined) booking.checkOutDate = checkOutDate;
     if (confirmationNumber !== undefined) booking.confirmationNumber = confirmationNumber;
+    if (notes !== undefined) booking.notes = notes;
+    if (cost !== undefined) booking.cost = Number(cost);
+    if (departureAirport !== undefined) booking.departureAirport = departureAirport;
+    if (arrivalAirport !== undefined) booking.arrivalAirport = arrivalAirport;
+    if (departureTime !== undefined) booking.departureTime = departureTime;
+    if (arrivalTime !== undefined) booking.arrivalTime = arrivalTime;
+    if (fromLocation !== undefined) booking.fromLocation = fromLocation;
+    if (toLocation !== undefined) booking.toLocation = toLocation;
+    if (travelDate !== undefined) booking.travelDate = travelDate;
 
     const updatedBooking = await booking.save();
     return res.status(200).json({ success: true, data: updatedBooking });

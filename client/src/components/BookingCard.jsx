@@ -1,10 +1,11 @@
 /*
   BookingCard.jsx – Displays a single booking (Hotel/Flight/Transport/Other).
-  Shows a type badge, booking name, dates, and confirmation number.
-  Props: booking { _id, bookingType, bookingName, checkInDate, checkOutDate, confirmationNumber }
+  Shows a type badge, booking name, dates, confirmation number, and actual cost.
+  Props: booking { _id, bookingType, bookingName, checkInDate, checkOutDate, confirmationNumber, cost }
          onDelete(bookingId) – called when the delete button is clicked
+  The green cost badge is shown when cost > 0, making actual spend visible at a glance.
 */
-import { Calendar, Trash2, Hash } from 'lucide-react';
+import { Calendar, Trash2, Hash, IndianRupee } from 'lucide-react';
 import { formatDateShort } from '../utils/helperFunctions';
 
 // Maps booking type to a color scheme
@@ -23,7 +24,7 @@ const BookingCard = ({ booking, onDelete }) => {
       data-testid={`booking-card-${booking._id}`}
       className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col gap-2"
     >
-      {/* Type badge + name + delete */}
+      {/* Type badge + name + cost badge + delete */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5">
           <span className={`self-start text-xs font-semibold px-2 py-0.5 rounded-full ${badgeClass}`}>
@@ -31,14 +32,22 @@ const BookingCard = ({ booking, onDelete }) => {
           </span>
           <h4 className="font-semibold text-slate-900 text-sm">{booking.bookingName}</h4>
         </div>
-        <button
-          onClick={() => onDelete(booking._id)}
-          aria-label={`Delete booking ${booking.bookingName}`}
-          className="shrink-0 text-slate-400 hover:text-red-500 transition-colors p-1 rounded"
-          data-testid={`delete-booking-${booking._id}`}
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {booking.cost > 0 && (
+            <span className="flex items-center gap-0.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+              <IndianRupee className="w-3 h-3" />
+              {booking.cost.toLocaleString('en-IN')}
+            </span>
+          )}
+          <button
+            onClick={() => onDelete(booking._id)}
+            aria-label={`Delete booking ${booking.bookingName}`}
+            className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded"
+            data-testid={`delete-booking-${booking._id}`}
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Date range */}

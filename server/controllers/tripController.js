@@ -40,7 +40,14 @@ const getTripById = async (req, res) => {
 
 const createTrip = async (req, res) => {
   try {
-    const { tripName, destination, startDate, endDate, estimatedBudget, actualBudget, currency } = req.body;
+    const {
+      tripName, destination, startDate, endDate,
+      estimatedBudget, actualBudget, currency,
+      // seededActivities: optional array sent from CreateTrip when the user
+      // accepts the pre-planned itinerary template from a destination.
+      // Shape: [{ day: 1, activities: ['Visit Baga Beach', 'Sunset cruise'] }, ...]
+      seededActivities,
+    } = req.body;
 
     if (!tripName || !destination || !startDate || !endDate) {
       return res.status(400).json({
@@ -60,11 +67,44 @@ const createTrip = async (req, res) => {
       currency: currency || "INR",
     });
 
+    // ── Seed activities from pre-planned itinerary template ─────────────────
+    // If the user accepted the destination's itinerary, bulk-create Activity
+    // documents so they appear immediately in TripDetails without any manual
+    // entry. Each day is mapped to a real calendar date starting from startDate.
+    if (Array.isArray(seededActivities) && seededActivities.length > 0) {
+      const tripStart = new Date(startDate);
+      const activityDocs = [];
+
+      seededActivities.forEach(({ day, activities }) => {
+        if (!Array.isArray(activities)) return;
+        // Offset date: day 1 = startDate, day 2 = startDate + 1 day, etc.
+        const actDate = new Date(tripStart);
+        actDate.setDate(tripStart.getDate() + (day - 1));
+
+        activities.forEach((actName) => {
+          if (!actName || !actName.trim()) return;
+          activityDocs.push({
+            tripId:       trip._id,
+            activityName: actName.trim(),
+            activityDate: actDate,
+            location:     destination,   // default to the trip destination
+            description:  "Pre-planned activity (from destination template)",
+          });
+        });
+      });
+
+      if (activityDocs.length > 0) {
+        await Activity.insertMany(activityDocs);
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     return res.status(201).json({ success: true, data: trip });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 const updateTrip = async (req, res) => {
   try {

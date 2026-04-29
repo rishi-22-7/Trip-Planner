@@ -1,9 +1,10 @@
 /*
   Navbar.jsx – Sticky top navigation bar.
   Renders different links based on auth state:
-    - Guest: Home, Destinations, Login, Register
-    - User:  My Trips, Plan Trip, History, Profile, Logout
-    - Admin: adds "Admin" link
+    - Guest:  Home, Destinations, Login, Register
+    - User:   My Trips, Plan a Trip, History, Destinations, Profile, Logout
+    - Admin:  Destinations, Admin (user-centric links like My Trips are hidden)
+  Role check: user?.role === 'admin' gates admin-only and user-only sections.
   Reads from AuthContext so no props are needed.
 */
 import { useState } from 'react';
@@ -54,12 +55,18 @@ const Navbar = () => {
 
             {isAuthenticated && (
               <>
-                <Link to="/trips"          className={linkClass('/trips')}>My Trips</Link>
-                <Link to="/trips/new"      className={linkClass('/trips/new')}>Plan a Trip</Link>
-                <Link to="/trips/history"  className={linkClass('/trips/history')}>History</Link>
-                <Link to="/destinations"   className={linkClass('/destinations')}>Destinations</Link>
+                {/* User-only links – hidden for admins who manage content, not trips */}
+                {user?.role !== 'admin' && (
+                  <>
+                    <Link to="/trips"         className={linkClass('/trips')}>My Trips</Link>
+                    <Link to="/trips/new"     className={linkClass('/trips/new')}>Plan a Trip</Link>
+                    <Link to="/trips/history" className={linkClass('/trips/history')}>History</Link>
+                    <Link to="/destinations" className={linkClass('/destinations')}>Destinations</Link>
+                  </>
+                )}
+                {/* Admin-only link – only visible when role === 'admin' */}
                 {user?.role === 'admin' && (
-                  <Link to="/admin/dashboard" className={linkClass('/admin/dashboard')}>Admin</Link>
+                  <Link to="/admin/dashboard" className={linkClass('/admin/dashboard')}>Admin Dashboard</Link>
                 )}
               </>
             )}
@@ -104,13 +111,19 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <MobileLink to="/trips"         label="My Trips"     onClick={() => setMobileMenuOpen(false)} />
-                <MobileLink to="/trips/new"     label="Plan a Trip"  onClick={() => setMobileMenuOpen(false)} />
-                <MobileLink to="/trips/history" label="History"      onClick={() => setMobileMenuOpen(false)} />
-                <MobileLink to="/destinations"  label="Destinations" onClick={() => setMobileMenuOpen(false)} />
-                <MobileLink to="/profile"       label="Profile"      onClick={() => setMobileMenuOpen(false)} />
+                {/* User-only mobile links – hidden for admins */}
+                {user?.role !== 'admin' && (
+                  <>
+                    <MobileLink to="/trips"         label="My Trips"    onClick={() => setMobileMenuOpen(false)} />
+                    <MobileLink to="/trips/new"     label="Plan a Trip" onClick={() => setMobileMenuOpen(false)} />
+                    <MobileLink to="/trips/history" label="History"     onClick={() => setMobileMenuOpen(false)} />
+                    <MobileLink to="/destinations" label="Destinations" onClick={() => setMobileMenuOpen(false)} />
+                  </>
+                )}
+                <MobileLink to="/profile"      label="Profile"      onClick={() => setMobileMenuOpen(false)} />
+                {/* Admin-only mobile link */}
                 {user?.role === 'admin' && (
-                  <MobileLink to="/admin/dashboard" label="Admin Panel" onClick={() => setMobileMenuOpen(false)} />
+                  <MobileLink to="/admin/dashboard" label="Admin Dashboard" onClick={() => setMobileMenuOpen(false)} />
                 )}
                 <button onClick={handleLogout} className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                   Logout

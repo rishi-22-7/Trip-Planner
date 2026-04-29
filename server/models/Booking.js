@@ -44,6 +44,13 @@ const bookingSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    // Actual cost paid for this booking, filled after completion.
+    // Summed with activity costs to show total actual spend on the trip.
+    cost: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true }
 );
