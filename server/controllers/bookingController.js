@@ -24,12 +24,12 @@ const getBookingsByTrip = async (req, res) => {
 const createBooking = async (req, res) => {
   try {
     const {
-      tripId, bookingType, bookingName, confirmationNumber, notes,
+      tripId, bookingType, transportMode, bookingName, confirmationNumber, notes,
       // Hotel
       checkInDate, checkOutDate,
-      // Flight
+      // Flight-specific
       departureAirport, arrivalAirport, departureTime, arrivalTime,
-      // Transport
+      // General transport (Train/Bus/Own Vehicle/Flight)
       fromLocation, toLocation, travelDate,
     } = req.body;
 
@@ -50,8 +50,8 @@ const createBooking = async (req, res) => {
     }
 
     const booking = await Booking.create({
-      tripId, bookingType, bookingName,
-      confirmationNumber, notes,
+      tripId, bookingType, transportMode: bookingType === 'Transport' ? (transportMode || '') : '',
+      bookingName, confirmationNumber, notes,
       checkInDate, checkOutDate,
       departureAirport, arrivalAirport, departureTime, arrivalTime,
       fromLocation, toLocation, travelDate,
@@ -81,10 +81,16 @@ const updateBooking = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const { bookingType, bookingName, checkInDate, checkOutDate, confirmationNumber, notes, cost,
+    const { bookingType, transportMode, bookingName, checkInDate, checkOutDate,
+            confirmationNumber, notes, cost,
             departureAirport, arrivalAirport, departureTime, arrivalTime,
             fromLocation, toLocation, travelDate } = req.body;
-    if (bookingType !== undefined) booking.bookingType = bookingType;
+    if (bookingType !== undefined) {
+      booking.bookingType = bookingType;
+      // Clear transportMode if switching to Hotel
+      if (bookingType === 'Hotel') booking.transportMode = '';
+    }
+    if (transportMode !== undefined && booking.bookingType === 'Transport') booking.transportMode = transportMode;
     if (bookingName !== undefined) booking.bookingName = bookingName;
     if (checkInDate !== undefined) booking.checkInDate = checkInDate;
     if (checkOutDate !== undefined) booking.checkOutDate = checkOutDate;

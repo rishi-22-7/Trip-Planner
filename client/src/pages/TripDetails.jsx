@@ -77,22 +77,97 @@ const EditActivityModal = ({ activity, onSave, onClose }) => {
 
 // ─── Edit Booking Modal ───────────────────────────────────────────────────────
 const EditBookingModal = ({ booking, onSave, onClose }) => {
-  const [form, setForm] = useState({ bookingName: booking.bookingName, bookingType: booking.bookingType, checkInDate: booking.checkInDate?.split('T')[0] || '', checkOutDate: booking.checkOutDate?.split('T')[0] || '', confirmationNumber: booking.confirmationNumber || '', cost: booking.cost ?? 0 });
+  const [form, setForm] = useState({
+    bookingName: booking.bookingName,
+    bookingType: booking.bookingType || 'Hotel',
+    transportMode: booking.transportMode || 'Flight',
+    checkInDate: booking.checkInDate?.split('T')[0] || '',
+    checkOutDate: booking.checkOutDate?.split('T')[0] || '',
+    departureAirport: booking.departureAirport || '',
+    arrivalAirport: booking.arrivalAirport || '',
+    departureTime: booking.departureTime || '',
+    arrivalTime: booking.arrivalTime || '',
+    fromLocation: booking.fromLocation || '',
+    toLocation: booking.toLocation || '',
+    travelDate: booking.travelDate?.split('T')[0] || '',
+    confirmationNumber: booking.confirmationNumber || '',
+    cost: booking.cost ?? 0,
+  });
   const [saving, setSaving] = useState(false);
-  const handleSubmit = async (e) => { e.preventDefault(); if (!form.bookingName.trim()) { toast.error('Booking name required.'); return; } setSaving(true); try { await onSave({ ...form, cost: Number(form.cost) || 0 }); } finally { setSaving(false); } };
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const isTransport = form.bookingType === 'Transport';
+  const isFlight = isTransport && form.transportMode === 'Flight';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.bookingName.trim()) { toast.error('Booking name required.'); return; }
+    setSaving(true);
+    try { await onSave({ ...form, cost: Number(form.cost) || 0 }); } finally { setSaving(false); }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 overflow-y-auto max-h-[90vh]">
         <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-slate-900">Edit Booking</h3><button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button></div>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div><label className="block text-xs font-medium text-slate-600 mb-1">Type</label><select value={form.bookingType} onChange={e => setForm(p => ({...p, bookingType: e.target.value}))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">{['Hotel','Flight','Transport','Other'].map(t => <option key={t}>{t}</option>)}</select></div>
-          <div><label className="block text-xs font-medium text-slate-600 mb-1">Name *</label><input type="text" value={form.bookingName} onChange={e => setForm(p => ({...p, bookingName: e.target.value}))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-xs font-medium text-slate-600 mb-1">Check-in</label><input type="date" value={form.checkInDate} onChange={e => setForm(p => ({...p, checkInDate: e.target.value}))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
-            <div><label className="block text-xs font-medium text-slate-600 mb-1">Check-out</label><input type="date" value={form.checkOutDate} onChange={e => setForm(p => ({...p, checkOutDate: e.target.value}))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+          {/* Category toggle */}
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Category</label>
+            <div className="flex gap-2">
+              {['Hotel', 'Transport'].map(type => (
+                <button key={type} type="button" onClick={() => set('bookingType', type)}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg border transition-colors ${form.bookingType === type ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                  {type === 'Hotel' ? '🏨 Hotel' : '🚌 Transport'}
+                </button>
+              ))}
+            </div>
           </div>
-          <div><label className="block text-xs font-medium text-slate-600 mb-1">Confirmation #</label><input type="text" value={form.confirmationNumber} onChange={e => setForm(p => ({...p, confirmationNumber: e.target.value.toUpperCase()}))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
-          <div><label className="block text-xs font-medium text-slate-600 mb-1">Actual Cost (₹)</label><input type="number" min="0" placeholder="0" value={form.cost} onChange={e => setForm(p => ({...p, cost: e.target.value}))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+          {/* Transport mode */}
+          {isTransport && (
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Transport Mode</label>
+              <div className="grid grid-cols-2 gap-2">
+                {['Flight', 'Train', 'Bus', 'Own Vehicle'].map(mode => (
+                  <button key={mode} type="button" onClick={() => set('transportMode', mode)}
+                    className={`py-2 text-xs font-semibold rounded-lg border transition-colors ${form.transportMode === mode ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                    {mode === 'Flight' ? '✈️ Flight' : mode === 'Train' ? '🚂 Train' : mode === 'Bus' ? '🚌 Bus' : '🚗 Own Vehicle'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Name */}
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">{isTransport ? `${form.transportMode} Name / Operator *` : 'Hotel Name *'}</label>
+            <input type="text" value={form.bookingName} onChange={e => set('bookingName', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          {/* Hotel dates */}
+          {!isTransport && (
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">Check-in</label><input type="date" value={form.checkInDate} onChange={e => set('checkInDate', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">Check-out</label><input type="date" value={form.checkOutDate} onChange={e => set('checkOutDate', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+            </div>
+          )}
+          {/* Flight-specific */}
+          {isFlight && (
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">Departure Airport</label><input type="text" placeholder="BOM" value={form.departureAirport} onChange={e => set('departureAirport', e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">Arrival Airport</label><input type="text" placeholder="DEL" value={form.arrivalAirport} onChange={e => set('arrivalAirport', e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">Departure Time</label><input type="time" value={form.departureTime} onChange={e => set('departureTime', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">Arrival Time</label><input type="time" value={form.arrivalTime} onChange={e => set('arrivalTime', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+            </div>
+          )}
+          {/* General transport */}
+          {isTransport && (
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">From</label><input type="text" value={form.fromLocation} onChange={e => set('fromLocation', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+              <div><label className="block text-xs font-medium text-slate-600 mb-1">To</label><input type="text" value={form.toLocation} onChange={e => set('toLocation', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+              <div className="col-span-2"><label className="block text-xs font-medium text-slate-600 mb-1">Travel Date</label><input type="date" value={form.travelDate} onChange={e => set('travelDate', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+            </div>
+          )}
+          {/* Shared */}
+          <div><label className="block text-xs font-medium text-slate-600 mb-1">Confirmation #</label><input type="text" value={form.confirmationNumber} onChange={e => set('confirmationNumber', e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+          <div><label className="block text-xs font-medium text-slate-600 mb-1">Actual Cost (₹)</label><input type="number" min="0" placeholder="0" value={form.cost} onChange={e => set('cost', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
           <div className="flex gap-2 justify-end pt-2">
             <button type="button" onClick={onClose} className="px-3 py-2 border border-slate-300 text-slate-700 text-sm rounded-lg hover:bg-slate-50">Cancel</button>
             <button type="submit" disabled={saving} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold rounded-lg flex items-center gap-1.5"><Save className="w-4 h-4" />{saving ? 'Saving…' : 'Save'}</button>
@@ -240,48 +315,159 @@ const ItinerarySection = ({ activities, onAdd, onDelete, onEdit }) => {
 };
 
 // ─── Sub-component: Add Booking inline form ───────────────────────────────────
+const TRANSPORT_MODES = ['Flight', 'Train', 'Bus', 'Own Vehicle'];
+
 const AddBookingForm = ({ onSave, onCancel }) => {
-  const [form, setForm] = useState({ bookingType: 'Hotel', bookingName: '', checkInDate: '', checkOutDate: '', confirmationNumber: '', cost: '' });
+  const [form, setForm] = useState({
+    bookingType: 'Hotel', transportMode: 'Flight',
+    bookingName: '', checkInDate: '', checkOutDate: '',
+    departureAirport: '', arrivalAirport: '', departureTime: '', arrivalTime: '',
+    fromLocation: '', toLocation: '', travelDate: '',
+    confirmationNumber: '', cost: '',
+  });
+
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const isTransport = form.bookingType === 'Transport';
+  const isFlight    = isTransport && form.transportMode === 'Flight';
 
   const handleSave = (e) => {
     e.preventDefault();
     if (!form.bookingName.trim()) { toast.error('Booking name is required.'); return; }
+    if (isTransport && !form.transportMode) { toast.error('Please select a transport mode.'); return; }
     onSave({ ...form, cost: Number(form.cost) || 0 });
   };
 
   return (
     <form onSubmit={handleSave} data-testid="booking-form" className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">Type</label>
-          <select data-testid="booking-type-select" value={form.bookingType} onChange={(e) => setForm({ ...form, bookingType: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            {['Hotel', 'Flight', 'Transport', 'Other'].map((t) => <option key={t}>{t}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">Name *</label>
-          <input data-testid="booking-name-input" type="text" placeholder="e.g. Taj Resort" value={form.bookingName} onChange={(e) => setForm({ ...form, bookingName: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">Check-in</label>
-          <input data-testid="booking-checkin-input" type="date" value={form.checkInDate} onChange={(e) => setForm({ ...form, checkInDate: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">Check-out</label>
-          <input data-testid="booking-checkout-input" type="date" value={form.checkOutDate} onChange={(e) => setForm({ ...form, checkOutDate: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-medium text-slate-600 mb-1">Confirmation #</label>
-          <input data-testid="booking-confirmation-input" type="text" placeholder="e.g. HOTEL123" value={form.confirmationNumber} onChange={(e) => setForm({ ...form, confirmationNumber: e.target.value.toUpperCase() })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-medium text-slate-600 mb-1">Actual Cost (₹) — fill after completion</label>
-          <input data-testid="booking-cost-input" type="number" min="0" placeholder="0" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+      {/* ── Step 1: Hotel or Transport ── */}
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">Category</label>
+        <div className="flex gap-2">
+          {['Hotel', 'Transport'].map(type => (
+            <button key={type} type="button"
+              onClick={() => set('bookingType', type)}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg border transition-colors ${form.bookingType === type ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+              {type === 'Hotel' ? '🏨 Hotel' : '🚌 Transport'}
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* ── Step 2: Transport Mode (only when Transport is chosen) ── */}
+      {isTransport && (
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">Transport Mode</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {TRANSPORT_MODES.map(mode => (
+              <button key={mode} type="button"
+                onClick={() => set('transportMode', mode)}
+                className={`py-2 text-xs font-semibold rounded-lg border transition-colors ${form.transportMode === mode ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                {mode === 'Flight' ? '✈️ Flight' : mode === 'Train' ? '🚂 Train' : mode === 'Bus' ? '🚌 Bus' : '🚗 Own Vehicle'}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Common: Name ── */}
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          {isTransport ? `${form.transportMode} Name / Operator *` : 'Hotel Name *'}
+        </label>
+        <input data-testid="booking-name-input" type="text"
+          placeholder={isTransport ? (isFlight ? 'e.g. IndiGo 6E-204' : 'e.g. KSRTC Express') : 'e.g. Taj Resort'}
+          value={form.bookingName} onChange={e => set('bookingName', e.target.value)}
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+      </div>
+
+      {/* ── Hotel fields ── */}
+      {!isTransport && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Check-in</label>
+            <input data-testid="booking-checkin-input" type="date" value={form.checkInDate}
+              onChange={e => set('checkInDate', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Check-out</label>
+            <input data-testid="booking-checkout-input" type="date" value={form.checkOutDate}
+              onChange={e => set('checkOutDate', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+        </div>
+      )}
+
+      {/* ── Flight-specific fields ── */}
+      {isFlight && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Departure Airport</label>
+            <input type="text" placeholder="e.g. BOM" value={form.departureAirport}
+              onChange={e => set('departureAirport', e.target.value.toUpperCase())}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Arrival Airport</label>
+            <input type="text" placeholder="e.g. DEL" value={form.arrivalAirport}
+              onChange={e => set('arrivalAirport', e.target.value.toUpperCase())}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Departure Time</label>
+            <input type="time" value={form.departureTime} onChange={e => set('departureTime', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Arrival Time</label>
+            <input type="time" value={form.arrivalTime} onChange={e => set('arrivalTime', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+        </div>
+      )}
+
+      {/* ── General transport fields (Train / Bus / Own Vehicle) ── */}
+      {isTransport && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">From</label>
+            <input type="text" placeholder="e.g. Mumbai" value={form.fromLocation}
+              onChange={e => set('fromLocation', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">To</label>
+            <input type="text" placeholder="e.g. Goa" value={form.toLocation}
+              onChange={e => set('toLocation', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-slate-600 mb-1">Travel Date</label>
+            <input type="date" value={form.travelDate} onChange={e => set('travelDate', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+          </div>
+        </div>
+      )}
+
+      {/* ── Shared ── */}
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">Confirmation #</label>
+        <input data-testid="booking-confirmation-input" type="text" placeholder="e.g. PNR123456"
+          value={form.confirmationNumber} onChange={e => set('confirmationNumber', e.target.value.toUpperCase())}
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">Actual Cost (₹) — fill after completion</label>
+        <input data-testid="booking-cost-input" type="number" min="0" placeholder="0"
+          value={form.cost} onChange={e => set('cost', e.target.value)}
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+      </div>
+
       <div className="flex gap-2 justify-end">
-        <button type="button" data-testid="booking-cancel-button" onClick={onCancel} className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
-        <button type="submit" data-testid="booking-save-button" className="px-3 py-1.5 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors">Save Booking</button>
+        <button type="button" data-testid="booking-cancel-button" onClick={onCancel}
+          className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+        <button type="submit" data-testid="booking-save-button"
+          className="px-3 py-1.5 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors">Save Booking</button>
       </div>
     </form>
   );

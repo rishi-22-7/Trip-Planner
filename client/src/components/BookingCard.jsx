@@ -1,35 +1,60 @@
 /*
-  BookingCard.jsx – Displays a single booking (Hotel/Flight/Transport/Other).
-  Shows a type badge, booking name, dates, confirmation number, and actual cost.
-  Props: booking { _id, bookingType, bookingName, checkInDate, checkOutDate, confirmationNumber, cost }
-         onDelete(bookingId) – called when the delete button is clicked
-  The green cost badge is shown when cost > 0, making actual spend visible at a glance.
+  BookingCard.jsx – Displays a single booking (Hotel or Transport).
+  For Transport: shows sub-mode badge (Flight/Train/Bus/Own Vehicle) and route info.
+  For Hotel: shows check-in/out dates.
+  Props: booking { _id, bookingType, transportMode, bookingName, checkInDate, checkOutDate,
+                   departureAirport, arrivalAirport, departureTime, arrivalTime,
+                   fromLocation, toLocation, travelDate, confirmationNumber, cost }
+         onDelete(bookingId)
 */
-import { Calendar, Trash2, Hash, IndianRupee } from 'lucide-react';
+import { Calendar, Trash2, Hash, IndianRupee, MapPin, Plane, Train, Bus, Car } from 'lucide-react';
 import { formatDateShort } from '../utils/helperFunctions';
 
-// Maps booking type to a color scheme
 const TYPE_COLORS = {
   Hotel:     'bg-emerald-50 text-emerald-700',
-  Flight:    'bg-blue-50 text-blue-700',
   Transport: 'bg-amber-50 text-amber-700',
-  Other:     'bg-slate-100 text-slate-600',
+};
+
+const MODE_COLORS = {
+  Flight:       'bg-blue-50 text-blue-700',
+  Train:        'bg-violet-50 text-violet-700',
+  Bus:          'bg-orange-50 text-orange-700',
+  'Own Vehicle':'bg-slate-100 text-slate-600',
+};
+
+const ModeIcon = ({ mode }) => {
+  if (mode === 'Flight')      return <Plane  className="w-3 h-3" />;
+  if (mode === 'Train')       return <Train  className="w-3 h-3" />;
+  if (mode === 'Bus')         return <Bus    className="w-3 h-3" />;
+  if (mode === 'Own Vehicle') return <Car    className="w-3 h-3" />;
+  return null;
 };
 
 const BookingCard = ({ booking, onDelete }) => {
-  const badgeClass = TYPE_COLORS[booking.bookingType] || TYPE_COLORS.Other;
+  const typeBadge = TYPE_COLORS[booking.bookingType] || TYPE_COLORS.Transport;
+  const modeBadge = MODE_COLORS[booking.transportMode] || '';
+  const isTransport = booking.bookingType === 'Transport';
+  const isFlight    = isTransport && booking.transportMode === 'Flight';
 
   return (
     <article
       data-testid={`booking-card-${booking._id}`}
       className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col gap-2"
     >
-      {/* Type badge + name + cost badge + delete */}
+      {/* Type badge + name + cost + delete */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5">
-          <span className={`self-start text-xs font-semibold px-2 py-0.5 rounded-full ${badgeClass}`}>
-            {booking.bookingType}
-          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${typeBadge}`}>
+              {booking.bookingType}
+            </span>
+            {isTransport && booking.transportMode && (
+              <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${modeBadge}`}>
+                <ModeIcon mode={booking.transportMode} />
+                {booking.transportMode}
+              </span>
+            )}
+          </div>
           <h4 className="font-semibold text-slate-900 text-sm">{booking.bookingName}</h4>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -50,14 +75,33 @@ const BookingCard = ({ booking, onDelete }) => {
         </div>
       </div>
 
-      {/* Date range */}
-      {booking.checkInDate && (
+      {/* Hotel: date range */}
+      {!isTransport && booking.checkInDate && (
         <p className="flex items-center gap-1.5 text-xs text-slate-500">
           <Calendar className="w-3.5 h-3.5 text-slate-400" />
           {formatDateShort(booking.checkInDate)}
           {booking.checkOutDate && booking.checkOutDate !== booking.checkInDate
             ? ` – ${formatDateShort(booking.checkOutDate)}`
             : ''}
+        </p>
+      )}
+
+      {/* Transport: route */}
+      {isTransport && (booking.fromLocation || booking.toLocation || booking.departureAirport || booking.arrivalAirport) && (
+        <p className="flex items-center gap-1.5 text-xs text-slate-500">
+          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+          {isFlight
+            ? `${booking.departureAirport || '?'} → ${booking.arrivalAirport || '?'}`
+            : `${booking.fromLocation || '?'} → ${booking.toLocation || '?'}`}
+          {isFlight && booking.departureTime && ` · ${booking.departureTime}`}
+        </p>
+      )}
+
+      {/* Transport: travel date */}
+      {isTransport && booking.travelDate && (
+        <p className="flex items-center gap-1.5 text-xs text-slate-500">
+          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          {formatDateShort(booking.travelDate)}
         </p>
       )}
 
@@ -73,3 +117,4 @@ const BookingCard = ({ booking, onDelete }) => {
 };
 
 export default BookingCard;
+
