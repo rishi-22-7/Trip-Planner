@@ -2,23 +2,6 @@
 
 > A complete, production-ready travel planning platform built with **MongoDB, Express.js, React, and Node.js**. Plan trips, track bookings, manage activities, monitor budgets, and explore curated destinations — all from one clean dashboard.
 
----
-
-## 📸 UI Screenshots
-
-### 🏠 Landing Page
-![Home Page](./docs/screenshots/home.png)
-
-### 📊 User Dashboard
-![Dashboard](./docs/screenshots/dashboard.png)
-
-### 🗺️ Trip Details (Bookings Tab)
-![Trip Details](./docs/screenshots/trip-details.png)
-
-### 🛡️ Admin Dashboard
-![Admin Dashboard](./docs/screenshots/admin-dashboard.png)
-
----
 
 ## 📑 Table of Contents
 
