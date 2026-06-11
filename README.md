@@ -1,5 +1,11 @@
 # ✈️ Trip Planner — Full Stack MERN Application
 
+<div align="center">
+
+[![Live Demo](https://img.shields.io/badge/LIVE%20DEMO-my--trip--planner--web.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://my-trip-planner-web.vercel.app/)
+
+</div>
+
 > A complete, production-ready travel planning platform built with **MongoDB, Express.js, React, and Node.js**. Plan trips, track bookings, manage activities, monitor budgets, and explore curated destinations — all from one clean dashboard.
 
 
@@ -64,6 +70,16 @@ Admins get a separate, protected dashboard to monitor the platform — viewing a
 ## 🛠️ Tech Stack
 
 ### Frontend
+<p align="left">
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" /></a>
+  <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
+  <a href="https://reactrouter.com/"><img src="https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router" /></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" /></a>
+  <a href="https://axios-http.com/"><img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios" /></a>
+  <img src="https://img.shields.io/badge/Lucide_Icons-orange?style=for-the-badge" alt="Lucide Icons" />
+  <img src="https://img.shields.io/badge/React_Hot_Toast-pink?style=for-the-badge" alt="React Hot Toast" />
+</p>
+
 | Technology | Version | Purpose |
 |---|---|---|
 | **React** | 18+ | UI framework |
@@ -75,6 +91,16 @@ Admins get a separate, protected dashboard to monitor the platform — viewing a
 | **React Hot Toast** | 2.x | Toast notifications |
 
 ### Backend
+<p align="left">
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" /></a>
+  <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js" /></a>
+  <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" /></a>
+  <a href="https://mongoosejs.com/"><img src="https://img.shields.io/badge/Mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white" alt="Mongoose" /></a>
+  <a href="https://jwt.io/"><img src="https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=json-web-tokens&logoColor=white" alt="JWT" /></a>
+  <img src="https://img.shields.io/badge/Bcrypt-blueviolet?style=for-the-badge" alt="Bcrypt" />
+  <a href="https://nodemon.io/"><img src="https://img.shields.io/badge/Nodemon-76DEC1?style=for-the-badge&logo=nodemon&logoColor=white" alt="Nodemon" /></a>
+</p>
+
 | Technology | Version | Purpose |
 |---|---|---|
 | **Node.js** | 18+ | Runtime |
